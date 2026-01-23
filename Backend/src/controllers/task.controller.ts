@@ -25,10 +25,15 @@ export class TaskController {
   async getTasks(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.user!.userId;
-      const query = req.query;
+      // Convert query parameters to proper types
+      const query = {
+        page: req.query.page ? Number(req.query.page) : undefined,
+        limit: req.query.limit ? Number(req.query.limit) : undefined,
+        status: req.query.status as any,
+        search: req.query.search as string,
+      };
 
       const result = await taskService.getTasks(userId, query);
-
       res.status(200).json({
         success: true,
         data: result,

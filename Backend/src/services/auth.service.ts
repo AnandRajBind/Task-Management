@@ -10,14 +10,11 @@ export class AuthService {
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
-
     if (existingUser) {
       throw new AppError('Email already registered', 409);
     }
-
     // Hash password
     const hashedPassword = await hashPassword(password);
-
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -119,15 +116,24 @@ export class AuthService {
       email: storedToken.user.email,
     });
 
-    // Delete old refresh token and store new one
+    // Delete old refresh token first
     await prisma.refreshToken.delete({ where: { id: storedToken.id } });
-    await prisma.refreshToken.create({
-      data: {
-        token: tokens.refreshToken,
-        userId: storedToken.user.id,
-        expiresAt: getRefreshTokenExpiry(),
-      },
-    });
+    
+    // Create new refresh token with error handling
+    try {
+      await prisma.refreshToken.create({
+        data: {
+          token: tokens.refreshToken,
+          userId: storedToken.user.id,
+          expiresAt: getRefreshTokenExpiry(),
+        },
+      });
+    } catch (error: any) {
+      // If duplicate token error (P2002), ignore it as token already exists
+      if (error.code !== 'P2002') {
+        throw error;
+      }
+    }
 
     return { tokens };
   }
@@ -137,7 +143,6 @@ export class AuthService {
     await prisma.refreshToken.deleteMany({
       where: { token: refreshToken },
     });
-
     return { message: 'Logged out successfully' };
   }
 }
