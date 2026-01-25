@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Task Management System',
   description: 'Manage your tasks efficiently',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
