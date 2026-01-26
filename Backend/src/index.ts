@@ -7,10 +7,29 @@ import prisma from './config/database';
 
 const app = express();
 
-// Middleware
+// Middleware - CORS configuration
 app.use(cors({
-  origin: env.corsOrigin,
-  credentials: true
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = Array.isArray(env.corsOrigin) ? env.corsOrigin : [env.corsOrigin];
+    
+    // Check if the origin is allowed or matches Vercel preview pattern
+    const isAllowed = allowedOrigins.some(allowed => 
+      origin === allowed || 
+      origin.endsWith('.vercel.app') // Allow all Vercel deployments
+    );
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

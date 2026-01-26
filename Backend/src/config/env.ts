@@ -19,5 +19,7 @@ export const env = {
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || 'refresh-secret',
   jwtAccessExpiry: (process.env.JWT_ACCESS_EXPIRY || '15m') as string,
   jwtRefreshExpiry: (process.env.JWT_REFRESH_EXPIRY || '7d') as string,
-  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  corsOrigin: process.env.CORS_ORIGIN 
+    ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+    : ['http://localhost:3000'],
 };
